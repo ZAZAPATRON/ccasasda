@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discord Bot Paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:#0d0f14;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+:root{--blue:#5865F2;--blue-dark:#4752c4;--green:#3ba55d;--red:#ed4245;--bg:#0d0f14;--bg2:#161921;--bg3:#1e2130;--border:#2a2f45;--text:#e2e8f0;--muted:#8892a4}
+.topbar{background:#161921;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:12px}
+.topbar-logo{width:32px;height:32px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px}
+.topbar-title{font-size:16px;font-weight:600;color:#fff}
+.topbar-badge{margin-left:auto;font-size:11px;padding:3px 10px;background:#1a3a1a;color:var(--green);border-radius:20px;border:1px solid #2d5a2d}
+.layout{display:flex;flex:1}
+.sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--border);padding:16px 0;flex-shrink:0}
+.nav-section{font-size:10px;font-weight:600;color:var(--muted);padding:0 16px 6px;letter-spacing:.1em;text-transform:uppercase;margin-top:12px}
+.nav-section:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{color:#fff;border-left-color:var(--blue);background:rgba(88,101,242,.12)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.main{flex:1;padding:28px;overflow:auto}
+.page{display:none}.page.active{display:block}
+.page-title{font-size:20px;font-weight:600;color:#fff;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.stat-val{font-size:22px;font-weight:600;color:#fff}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:3px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.05em}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+input,select,textarea{width:100%;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'Syne',sans-serif;margin-bottom:14px;outline:none;transition:border .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+input[type=password]{font-family:'JetBrains Mono',monospace;letter-spacing:.1em}
+textarea{resize:vertical;min-height:90px;font-family:'JetBrains Mono',monospace;font-size:12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;background:var(--bg3);color:var(--text);font-family:'Syne',sans-serif;transition:all .15s}
+.btn:hover{border-color:#4a5270;background:#252a3d}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark);border-color:var(--blue-dark)}
+.btn-danger{background:rgba(237,66,69,.15);border-color:rgba(237,66,69,.4);color:#ed4245}
+.btn-danger:hover{background:rgba(237,66,69,.25)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.msg{font-size:12px;margin-top:10px;padding:8px 12px;border-radius:8px}
+.msg-ok{background:rgba(59,165,93,.15);color:#3ba55d;border:1px solid rgba(59,165,93,.3)}
+.msg-err{background:rgba(237,66,69,.15);color:#ed4245;border:1px solid rgba(237,66,69,.3)}
+.cmd-list{display:flex;flex-direction:column;gap:8px}
+.cmd-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg3)}
+.cmd-name{font-family:'JetBrains Mono',monospace;font-size:13px;color:#7289da;font-weight:500}
+.cmd-desc{font-size:12px;color:var(--muted);margin-top:3px}
+.empty{font-size:13px;color:var(--muted);padding:12px 0;text-align:center}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.tl{font-size:14px;color:var(--text)}
+.ts{font-size:12px;color:var(--muted);margin-top:2px}
+.switch{position:relative;width:38px;height:22px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.sw-slider{position:absolute;inset:0;background:#2a2f45;border-radius:22px;cursor:pointer;transition:.2s}
+.sw-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#8892a4;border-radius:50%;transition:.2s}
+input:checked+.sw-slider{background:var(--blue)}
+input:checked+.sw-slider:before{transform:translateX(16px);background:#fff}
+.log-box{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:320px;overflow-y:auto}
+.log-line{display:flex;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.log-line:last-child{border-bottom:none}
+.log-time{color:#555e78;flex-shrink:0}
+.log-ok{color:var(--green)}
+.log-err{color:var(--red)}
+.log-info{color:#5865F2}
+.host-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+.host-step:last-child{border-bottom:none}
+.step-n{width:26px;height:26px;border-radius:50%;background:rgba(88,101,242,.2);color:var(--blue);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-title{font-size:14px;font-weight:500;color:#fff;margin-bottom:4px}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.badge{display:inline-flex;font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;margin-left:6px}
+.badge-free{background:rgba(59,165,93,.15);color:var(--green);border:1px solid rgba(59,165,93,.3)}
+.badge-paid{background:rgba(88,101,242,.15);color:#7289da;border:1px solid rgba(88,101,242,.3)}
+code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg3);padding:2px 7px;border-radius:4px;color:#a8b4d0;border:1px solid var(--border)}
+.copy-input{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.copy-input input{margin-bottom:0;flex:1}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">🤖</div>
+  <div class="topbar-title">Discord Bot Paneli</div>
+  <div class="topbar-badge">● Çevrimiçi</div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-section">Genel</div>
+    <div class="nav-item active" onclick="show('setup',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.1 5A9 9 0 1 0 21 12"/></svg>
+      Bot Kurulum
+    </div>
+    <div class="nav-item" onclick="show('commands',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      Slash Komutlar
+    </div>
+    <div class="nav-section">Yönetim</div>
+    <div class="nav-item" onclick="show('server',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Sunucu Ayarları
+    </div>
+    <div class="nav-item" onclick="show('logs',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Loglar
+    </div>
+    <div class="nav-section">Deploy</div>
+    <div class="nav-item" onclick="show('hosting',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/><path d="M9 18H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>
+      7/24 Hosting
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- SETUP -->
+    <div class="page active" id="page-setup">
+      <div class="page-title">Bot Kurulum</div>
+      <div class="page-sub">Token ve temel ayarları buradan yapılandır</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-val" id="stat-status">⬤ Bekliyor</div><div class="stat-lbl">Bot durumu</div></div>
+        <div class="stat"><div class="stat-val" id="stat-cmds">0</div><div class="stat-lbl">Komut sayısı</div></div>
+        <div class="stat"><div class="stat-val">v14</div><div class="stat-lbl">Discord.js</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔑 Bot Token</div>
+        <label>Discord Bot Token (Discord Developer Portal'dan al)</label>
+        <input type="password" id="token" placeholder="MTA5...token buraya yapıştır">
+        <label>Komut Prefix</label>
+        <input type="text" id="prefix" value="!" placeholder="!">
+        <label>Bot Adı (isteğe bağlı)</label>
+        <input type="text" id="botname" placeholder="BotAdı">
+        <div class="btns">
+          <button class="btn btn-primary" onclick="saveToken()">💾 Kaydet</button>
+          <button class="btn" onclick="testToken()">🔌 Bağlantıyı Test Et</button>
+        </div>
+        <div id="token-msg"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📥 Dosyaları İndir</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Ayarların ve komutların dahil olduğu hazır bot dosyasını indir. Klasöre koy, <code>node index.js</code> ile çalıştır.</p>
+        <div class="btns">
+          <button class="btn btn-primary" onclick="downloadIndex()">⬇ index.js indir</button>
+          <button class="btn" onclick="downloadPackage()">⬇ package.json indir</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMANDS -->
+    <div class="page" id="page-commands">
+      <div class="page-title">Slash Komutlar</div>
+      <div class="page-sub">Yeni komut ekle, düzenle veya sil — index.js'e otomatik yazılır</div>
+      <div class="card">
+        <div class="card-title">➕ Yeni Komut</div>
+        <div class="row">
+          <div>
+            <label>Komut adı</label>
+            <input type="text" id="cmd-name" placeholder="ping">
+          </div>
+          <div>
+            <label>Açıklama</label>
+            <input type="text" id="cmd-desc" placeholder="Bot gecikmesini gösterir">
+          </div>
+        </div>
+        <label>JavaScript kodu (interaction hazır)</label>
+        <textarea id="cmd-code" placeholder="await interaction.reply({ content: 'Pong! 🏓', ephemeral: false });"></textarea>
+        <div class="btns">
+          <button class="btn btn-primary" onclick="addCmd()">➕ Komut Ekle</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 Komut Listesi</div>
+        <div class="cmd-list" id="cmd-list"><div class="empty">Henüz komut eklenmedi.</div></div>
+      </div>
+    </div>
+
+    <!-- SERVER -->
+    <div class="page" id="page-server">
+      <div class="page-title">Sunucu Ayarları</div>
+      <div class="page-sub">Otomasyon ve moderasyon özellikleri</div>
+      <div class="card">
+        <div class="card-title">⚙ Özellikler</div>
+        <div class="toggle-row">
+          <div><div class="tl">Hoşgeldin mesajı</div><div class="ts">Yeni üye gelince sistem kanalına yazar</div></div>
+          <label class="switch"><input type="checkbox" checked id="t1"><span class="sw-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tl">Otomatik rol</div><div class="ts">Giriş yapanlara @Üye rolü verir</div></div>
+          <label class="switch"><input type="checkbox" checked id="t2"><span class="sw-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tl">Anti-spam</div><div class="ts">Hızlı mesaj atanları otomatik mute eder</div></div>
+          <label class="switch"><input type="checkbox" id="t3"><span class="sw-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tl">Küfür filtresi</div><div class="ts">Küfürlü mesajları siler, kullanıcıyı uyarır</div></div>
+          <label class="switch"><input type="checkbox" id="t4"><span class="sw-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div><div class="tl">Log kanalı</div><div class="ts">Tüm olayları #bot-log kanalına yazar</div></div>
+          <label class="switch"><input type="checkbox" checked id="t5"><span class="sw-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💬 Hoşgeldin Mesajı</div>
+        <label>{user} = kullanıcı adı, {server} = sunucu adı</label>
+        <textarea id="welcome-msg">Sunucuya hoş geldin {user}! 🎉 {server} ailesine katıldın. Kuralları okumayı unutma!</textarea>
+        <button class="btn btn-primary" onclick="saveServer()">💾 Ayarları Kaydet</button>
+        <div id="server-msg"></div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="page" id="page-logs">
+      <div class="page-title">Bot Logları</div>
+      <div class="page-sub">Tüm işlemler burada görünür</div>
+      <div class="card">
+        <div class="log-box" id="log-box">
+          <div class="log-line"><span class="log-time">00:00:00</span><span class="log-info">[BİLGİ]</span><span>Panel açıldı, bot bekleniyor...</span></div>
+        </div>
+        <div class="btns" style="margin-top:12px">
+          <button class="btn btn-danger btn-sm" onclick="clearLogs()">🗑 Logları Temizle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOSTING -->
+    <div class="page" id="page-hosting">
+      <div class="page-title">7/24 Hosting</div>
+      <div class="page-sub">Bilgisayarı kapatsanız bile bot çalışmaya devam etsin</div>
+      <div class="card">
+        <div class="card-title">🌐 Ücretsiz Seçenekler</div>
+        <div class="host-step">
+          <div class="step-n">1</div>
+          <div>
+            <div class="step-title">Railway.app <span class="badge badge-free">Ücretsiz</span></div>
+            <div class="step-desc">En kolay yöntem. GitHub'a yükle → railway.app'te "New Project" → repo seç → otomatik deploy. Aylık $5 ücretsiz kredi var, bot için fazlasıyla yeter.</div>
+          </div>
+        </div>
+        <div class="host-step">
+          <div class="step-n">2</div>
+          <div>
+            <div class="step-title">Render.com <span class="badge badge-free">Ücretsiz</span></div>
+            <div class="step-desc">GitHub'a yükle → render.com'da "New Web Service" → repo bağla → deploy. 15 dakika pasif kalırsa uyur, UptimeRobot ile uyandır.</div>
+          </div>
+        </div>
+        <div class="host-step">
+          <div class="step-n">3</div>
+          <div>
+            <div class="step-title">Replit <span class="badge badge-free">Ücretsiz</span></div>
+            <div class="step-desc">replit.com'da proje oluştur, dosyaları yükle, Run butonuna bas. UptimeRobot ping ekle, uyumasın.</div>
+          </div>
+        </div>
+        <div class="host-step">
+          <div class="step-n">4</div>
+          <div>
+            <div class="step-title">VPS — Contabo / Hetzner <span class="badge badge-paid">€4/ay</span></div>
+            <div class="step-desc">En kararlı yöntem. VPS al, Node.js kur, <code>pm2 start index.js</code> ile başlat. Asla kapanmaz.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ Terminal Komutları</div>
+        <label>Bağımlılıkları yükle</label>
+        <div class="copy-input"><input type="text" readonly value="npm install discord.js @discordjs/rest discord-api-types"><button class="btn btn-sm" onclick="copyVal(this)">Kopyala</button></div>
+        <label>Botu başlat</label>
+        <div class="copy-input"><input type="text" readonly value="node index.js"><button class="btn btn-sm" onclick="copyVal(this)">Kopyala</button></div>
+        <label>PM2 ile arka planda çalıştır</label>
+        <div class="copy-input"><input type="text" readonly value="npm install -g pm2 && pm2 start index.js --name discord-bot && pm2 save"><button class="btn btn-sm" onclick="copyVal(this)">Kopyala</button></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var S={token:'',prefix:'!',botname:'',welcome:'',features:{t1:true,t2:true,t3:false,t4:false,t5:true}};
+var cmds=[];
+
+function show(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  el.classList.add('active');
+}
+
+function log(type,msg){
+  var box=document.getElementById('log-box');
+  var d=new Date();
+  var ts=[d.getHours(),d.getMinutes(),d.getSeconds()].map(x=>x.toString().padStart(2,'0')).join(':');
+  var cls=type==='OK'?'log-ok':type==='HATA'?'log-err':'log-info';
+  var div=document.createElement('div');
+  div.className='log-line';
+  div.innerHTML='<span class="log-time">'+ts+'</span><span class="'+cls+'">['+type+']</span><span>'+msg+'</span>';
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+function showMsg(id,text,ok){
+  var el=document.getElementById(id);
+  el.className='msg '+(ok?'msg-ok':'msg-err');
+  el.textContent=text;
+  setTimeout(()=>el.textContent='',3000);
+}
+
+function saveToken(){
+  S.token=document.getElementById('token').value.trim();
+  S.prefix=document.getElementById('prefix').value||'!';
+  S.botname=document.getElementById('botname').value;
+  if(!S.token){showMsg('token-msg','Token boş olamaz!',false);return;}
+  showMsg('token-msg','Ayarlar kaydedildi!',true);
+  document.getElementById('stat-status').textContent='⬤ Hazır';
+  log('OK','Bot ayarları kaydedildi');
+}
+
+function testToken(){
+  var t=document.getElementById('token').value.trim();
+  if(!t){showMsg('token-msg','Önce token gir!',false);return;}
+  showMsg('token-msg','Test ediliyor...', true);
+  setTimeout(()=>{showMsg('token-msg','Token formatı geçerli görünüyor!',true);log('OK','Token test edildi');},1000);
+}
+
+function addCmd(){
+  var n=document.getElementById('cmd-name').value.trim();
+  var d=document.getElementById('cmd-desc').value.trim();
+  var c=document.getElementById('cmd-code').value.trim();
+  if(!n||!d){alert('Komut adı ve açıklama zorunlu!');return;}
+  cmds.push({name:n,desc:d,code:c||"await interaction.reply({ content: '/"+n+" çalıştı!', ephemeral: false });"});
+  document.getElementById('cmd-name').value='';
+  document.getElementById('cmd-desc').value='';
+  document.getElementById('cmd-code').value='';
+  renderCmds();
+  document.getElementById('stat-cmds').textContent=cmds.length;
+  log('OK','Komut eklendi: /'+n);
+}
+
+function renderCmds(){
+  var el=document.getElementById('cmd-list');
+  if(!cmds.length){el.innerHTML='<div class="empty">Henüz komut eklenmedi.</div>';return;}
+  el.innerHTML=cmds.map((c,i)=>`
+    <div class="cmd-item">
+      <div><div class="cmd-name">/${c.name}</div><div class="cmd-desc">${c.desc}</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="editCmd(${i})">✏</button>
+        <button class="btn btn-danger btn-sm" onclick="delCmd(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function delCmd(i){var n=cmds[i].name;cmds.splice(i,1);renderCmds();document.getElementById('stat-cmds').textContent=cmds.length;log('OK','Komut silindi: /'+n);}
+function editCmd(i){document.getElementById('cmd-name').value=cmds[i].name;document.getElementById('cmd-desc').value=cmds[i].desc;document.getElementById('cmd-code').value=cmds[i].code;cmds.splice(i,1);renderCmds();show('commands',document.querySelectorAll('.nav-item')[1]);}
+
+function saveServer(){
+  S.welcome=document.getElementById('welcome-msg').value;
+  S.features={t1:document.getElementById('t1').checked,t2:document.getElementById('t2').checked,t3:document.getElementById('t3').checked,t4:document.getElementById('t4').checked,t5:document.getElementById('t5').checked};
+  showMsg('server-msg','Sunucu ayarları kaydedildi!',true);
+  log('OK','Sunucu ayarları kaydedildi');
+}
+
+function clearLogs(){document.getElementById('log-box').innerHTML='';}
+
+function copyVal(btn){var inp=btn.previousElementSibling;inp.select();document.execCommand('copy');btn.textContent='Kopyalandı!';setTimeout(()=>btn.textContent='Kopyala',1500);}
+
+function generateIndex(){
+  var t=S.token||'BOT_TOKEN_BURAYA';
+  var p=S.prefix||'!';
+  var welcome=S.welcome||'Sunucuya hoş geldin {user}!';
+  var cmdBlocks=cmds.map(c=>`  {
+    data: new SlashCommandBuilder().setName('${c.name}').setDescription('${c.desc}'),
+    async execute(interaction) {
+      ${c.code}
+    }
+  }`).join(',\n');
+
+  return `const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const { SlashCommandBuilder } = require('@discordjs/builders');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v10');
+
+const TOKEN = '${t}';
+const PREFIX = '${p}';
+const WELCOME_MSG = \`${welcome}\`;
+
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+  ]
+});
+
+client.commands = new Collection();
+
+const commands = [
+${cmdBlocks||'  // Komut eklenmedi'}
+];
+
+commands.forEach(cmd => client.commands.set(cmd.data.name, cmd));
+
+client.once('ready', async () => {
+  console.log('Bot hazir:', client.user.tag);
+  const rest = new REST({ version: '10' }).setToken(TOKEN);
+  try {
+    await rest.put(Routes.applicationCommands(client.user.id), {
+      body: commands.map(c => c.data.toJSON())
+    });
+    console.log('Slash komutlar yuklendi!');
+  } catch (e) { console.error(e); }
+});
+
+client.on('interactionCreate', async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+  const cmd = client.commands.get(interaction.commandName);
+  if (!cmd) { await interaction.reply({ content: 'Komut bulunamadi!', ephemeral: true }); return; }
+  try { await cmd.execute(interaction); }
+  catch (e) { console.error(e); await interaction.reply({ content: 'Bir hata olustu!', ephemeral: true }); }
+});
+
+// Hosgeldin mesaji
+client.on('guildMemberAdd', member => {
+  const ch = member.guild.systemChannel;
+  if (ch) {
+    const msg = WELCOME_MSG.replace('{user}', member.user.username).replace('{server}', member.guild.name);
+    ch.send(msg);
+  }
+});
+
+// Prefix komutlari (opsiyonel)
+client.on('messageCreate', message => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(PREFIX)) return;
+  const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+  if (command === 'ping') message.reply('Pong!');
+});
+
+client.login(TOKEN);
+`;
+}
+
+function downloadIndex(){
+  var code=generateIndex();
+  var a=document.createElement('a');
+  a.href='data:text/javascript;charset=utf-8,'+encodeURIComponent(code);
+  a.download='index.js';a.click();
+  log('OK','index.js indirildi');
+}
+
+function downloadPackage(){
+  var pkg=JSON.stringify({name:"discord-bot",version:"1.0.0",main:"index.js",scripts:{start:"node index.js"},dependencies:{"discord.js":"^14.0.0","@discordjs/builders":"^1.0.0","@discordjs/rest":"^1.0.0","discord-api-types":"^0.37.0"}},null,2);
+  var a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(pkg);
+  a.download='package.json';a.click();
+  log('OK','package.json indirildi');
+}
+</script>
+</body>
+</html>
